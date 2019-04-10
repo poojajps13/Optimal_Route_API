@@ -4,8 +4,8 @@ from django.db import models
 class Deliveries(models.Model):
 	name = models.CharField(max_length=200)
 	address = models.TextField(max_length=1000)
-	lat = models.IntegerField()
-	lng = models.IntegerField()
+	lat = models.FloatField()
+	lng = models.FloatField()
 	delivery_date = models.DateField()
 	status = models.CharField(max_length=20)
 	def __str__(self):
