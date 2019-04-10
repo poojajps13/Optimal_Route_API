@@ -46,18 +46,29 @@ class Add_Delivery(APIView):
 		serializer = DeliveriesSerializer(delivery, many = True)
 		return Response(serializer.data)
 	def post(self, request, *args, **kwargs):
-		a_delivery = Deliveries.objects.create(
-			name = request.data["name"],
-			address = request.data["address"],
-			lat = request.data["lat"],
-			lng = request.data["lng"],
-			delivery_date = request.data["delivery_date"],
-			status = request.data["status"],
-			)
-		return Response(
-            data = DeliveriesSerializer(a_delivery).data,
-            status = status.HTTP_201_CREATED
-        )
+		if request.data["status"] != "pending" and request.data["status"] != "delivered":
+			return Response({'error': 'status can be either \'delivered\' or \'pending\' only'}, status = HTTP_400_BAD_REQUEST)
+		try :
+			float(request.data["lat"]) and float(request.data["lng"])
+		except ValueError:
+			return Response({'error': 'Incorrect data type passed, latitude and longitude can only be of float type'},
+			 status = HTTP_400_BAD_REQUEST)
+		try:
+ 			datetime.datetime.strptime(request.data["delivery_date"],'%Y-%m-%d')
+ 			a_delivery = Deliveries.objects.create(
+ 				name = request.data["name"],
+ 				address = request.data["address"],
+ 				lat = request.data["lat"],
+ 				lng = request.data["lng"],
+ 				delivery_date = request.data["delivery_date"],
+ 				status = request.data["status"],
+ 				)
+ 			return Response(
+		            data = DeliveriesSerializer(a_delivery).data,
+		            status = status.HTTP_201_CREATED
+		        )
+		except ValueError:
+			return Response({'error': 'Incorrect data format, should be YYYY-MM-DD'}, status = HTTP_400_BAD_REQUEST)
 
 
 class Route(APIView):
@@ -116,9 +127,11 @@ class Route(APIView):
 					folium.PolyLine(locations = [(latitude[i], longitude[i]), (latitude[i+1], longitude[i+1])]).add_to(my_map)
 				my_map.save("my_map.html")"""
 				my_obj_list = []
+				j=1
 				for i in rout:
 					if(i!=0):
-						my_obj_list.append({"name":Addr[i][0], "address":Addr[i][1]})
+						my_obj_list.append({"name":Addr[i][0], "address":Addr[i][1], "destination":j})
+						j=j+1
 				return Response(my_obj_list)
 		except ValueError:
 			return Response({'error': 'Incorrect data format, should be YYYY-MM-DD'}, status = HTTP_400_BAD_REQUEST)
