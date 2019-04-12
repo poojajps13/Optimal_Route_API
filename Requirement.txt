@@ -2,3 +2,5 @@ pip install django
 pip install djangorestframework
 pip install geocoder
 pip install tsp
+pip install numpy
+pip install pandas
